@@ -13,15 +13,15 @@ def getClass(url):
     request=req.Request(url,headers={
         "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
         })
-    #print(request)
+
     with req.urlopen(request) as response:
         data=response.read().decode("utf-8")
-    #print(data)
+
     import bs4
+    
     root=bs4.BeautifulSoup(data,"html.parser")
     titles=root.find_all("div",class_="Ta(s) W(20%)")
-    # print(titles.a.string)
-    #with open("stockclass.txt","w",encoding="utf-8")as file:
+
     for title in titles:
         if title.a !=None:
         #print(title.a.string)
@@ -33,7 +33,7 @@ def getClass(url):
         #print(nextlink)
         nextlink_list.append("https://tw.stock.yahoo.com"+nextlink["href"])
         #print(nextlink_set)
-    #print(len(nextlink_list))
+
     return
 
 def stockChase():
