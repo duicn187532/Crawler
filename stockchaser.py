@@ -18,21 +18,17 @@ def getClass(url):
         data=response.read().decode("utf-8")
 
     import bs4
-    
+
     root=bs4.BeautifulSoup(data,"html.parser")
     titles=root.find_all("div",class_="Ta(s) W(20%)")
 
     for title in titles:
         if title.a !=None:
-        #print(title.a.string)
             title_list.append(title.a.string)
-            #file.write(title.a.string+"\n")
-            #print(title_list)
+
     nextlinks=root.find_all("a",string=title_list)
     for nextlink in nextlinks:
-        #print(nextlink)
         nextlink_list.append("https://tw.stock.yahoo.com"+nextlink["href"])
-        #print(nextlink_set)
 
     return
 
