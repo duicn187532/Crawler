@@ -1,51 +1,40 @@
-import urllib.request as req
-import getprice
 import time
-
-title_list=[]
-nextlink_list=[]
-price_set=set()
-titles=None
-prices=None
-num=None
-
-def getClass(url):
-    request=req.Request(url,headers={
-        "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-        })
-
-    with req.urlopen(request) as response:
-        data=response.read().decode("utf-8")
-
-    import bs4
-
-    root=bs4.BeautifulSoup(data,"html.parser")
-    titles=root.find_all("div",class_="Ta(s) W(20%)")
-
-    for title in titles:
-        if title.a !=None:
-            title_list.append(title.a.string)
-
-    nextlinks=root.find_all("a",string=title_list)
-    for nextlink in nextlinks:
-        nextlink_list.append("https://tw.stock.yahoo.com"+nextlink["href"])
-
-    return
-
-def stockChase():
-    pageURL="https://tw.stock.yahoo.com/class/"
-    getClass(pageURL)
+import Getrid
+import Getdata
+TAIId=[
+    1, 2, 3, 4, 6, 7, 9, 10, 11, 12, 13, 19, 20, 21, 22, 24, 30, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        49, 93, 94, 95, 96]#上市公司
+TWOId=[
+    97, 98, 121, 122, 123, 124, 125, 126, 130, 138, 139, 140, 141, 142, 145, 151, 153, 154, 155, 156, 157, 158, 159, 160, 161,
+         169, 170, 171]#上櫃公司
+rid_value=None
+price_set2=set()
+def getCompanyPrice():
     start_time = time.time()
-    for i in nextlink_list:
-        titles,prices,num=getprice.getPrice(i)
-        for num,price,title in zip(num,prices,titles):
-            price_set.add(num.string+" "+title.string+" 現價:"+price.string)
-    with open("pricenow.txt", "w", encoding="utf-8") as file:
-        pass
-    with open("pricenow.txt","a",encoding="utf-8")as file:
-        for i in price_set:
+    for TAIIds in TAIId:
+        for offset in range(0,120, 30):
+            url1="https://tw.stock.yahoo.com/class-quote?sectorId="+str(TAIIds)+"&exchange=TAI"
+            rid_value =Getrid.getrid(url1)
+            nurl = ("https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.getClassQuotes;exchange=TAI;"
+                    "offset="+str(offset)+";sectorId="+str(TAIIds)+"?bkt=&device=desktop&ecma=modern&"
+                    "feature=useNewQuoteTabColor&intl=tw&lang=zh-Hant-TW&partner=none&prid="+str(rid_value)+
+                    "&region=TW&site=finance&tz=Asia%2FTaipei&ver=1.2.1979&returnMeta=true")            
+            price_set2.update(Getdata.getPrice2(nurl))
+    for TWOIds in TWOId:
+        
+        for offset in range(0,120,30):
+            url2="https://tw.stock.yahoo.com/class-quote?sectorId="+str(TWOIds)+"&exchange=TWO"
+            rid_value =Getrid.getrid(url2)
+            nnurl=("https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.getClassQuotes;exchange=TWO;"
+                   "offset="+str(offset)+";sectorId="+str(TWOIds)+"?bkt=&device=desktop&ecma=modern&"
+                   "feature=useNewQuoteTabColor&intl=tw&lang=zh-Hant-TW&partner=none&prid="+str(rid_value)+
+                   "&region=TW&site=finance&tz=Asia%2FTaipei&ver=1.2.1979&returnMeta=true")
+            price_set2.update(Getdata.getPrice2(nnurl))
+    price_list = list(price_set2)
+    sorted_price_list = sorted(price_list, key=lambda x: x.split()[0])
+    with open("pricenow.txt","w",encoding="utf-8")as file:
+        for i in sorted_price_list:
             file.write(str(i)+"\n")  
 
     end_time = time.time()
     print(f"Execution time: {end_time - start_time} seconds")
-stockChase()
